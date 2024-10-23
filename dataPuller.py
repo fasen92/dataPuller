@@ -84,21 +84,24 @@ def downloadData(knownAPs, outputCsv, wifiFile, knownAPsFile):
                 newAPs.append(row[0])
                 
                 wifiDetails = fetch_wifi_details(row[0])
+                if wifiDetails is False:
+                    break
                 if wifiDetails:
-                    if wifiDetails is False:
-                        break
                     wifiData.append(wifiDetails)
 
     # Save wifi data to the file
     with open(wifiFile, 'w') as json_file:
         json.dump(wifiData, json_file, indent=4)
-        print(f"Data saved to {wifiData}")
+        #print(f"Data saved to {wifiData}")
 
     if newAPs:
         with open(knownAPsFile, 'a', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerows(newAPs)  # Append new known APs
+            writer.writerows([[ap] for ap in newAPs])  # Append new known APs
         print(f"New known APs saved to {knownAPsFile}")
+
+def reformat(mac_address):
+    return ''.join(mac_address).replace(",", "")
 
 if __name__ == "__main__": 
 
@@ -117,7 +120,7 @@ if __name__ == "__main__":
     f.close()
 
     with open(knownAPsFile, newline='') as csvfile:
-        knownAPs = list(csv.reader(csvfile))
+        knownAPs = [reformat(row) for row in csv.reader(csvfile)]
 
     filter_csv(inputCsv, outputCsv)
     downloadData(knownAPs, outputCsv, wifiData, knownAPsFile)
